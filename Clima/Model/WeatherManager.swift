@@ -10,6 +10,8 @@ import Foundation
 
 struct WeatherManager {
   
+  // MARK: - Variables
+  
   let weatherURL = "https://api.openweathermap.org/data/2.5/weather?units=imperial"
   
   private var apiKey: String {
@@ -29,6 +31,8 @@ struct WeatherManager {
       return value
     }
   }
+  
+  // MARK: - Methods
   
   func fetchWeather(cityName: String) {
     let urlString = "\(weatherURL)&q=\(cityName)&appid=\(apiKey)"
@@ -82,6 +86,8 @@ struct WeatherManager {
 //      print(dataString!)
 //    }
 //  }
+  
+  // MARK: - Helper methods
   
   func parseJSON(weatherData: Data) {
     let decoder = JSONDecoder()
