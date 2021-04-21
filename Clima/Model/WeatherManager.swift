@@ -42,7 +42,25 @@ struct WeatherManager {
       let session = URLSession(configuration: .default)
       
       // 3. Give a session a task
-      let task = session.dataTask(with: url, completionHandler: handle(data:response:error:))
+//       Method 1: Long form passing a method and not using a trailing closure. Uses "handle" method below.
+//       let task = session.dataTask(with: url, completionHandler: handle(data:response:error:))
+      
+      // Method 2 (Best practice): Using trailing closure instead.
+      let task = session.dataTask(with: url) { (data, response, error) in
+        
+        // Everything from inside of the handler method moved inside of this trailing closure below.
+        
+        // Check for errors
+        if error != nil {
+          print(error!)
+          return
+        }
+        
+        // Check for nil response data and parse JSON to Swift object
+        if let safeData = data {
+          parseJSON(weatherData: safeData)
+        }
+      }
       
       // 4. Start the task
       task.resume()
@@ -50,15 +68,31 @@ struct WeatherManager {
   }
   
   // Handler helper method called in performRequest()
-  func handle(data: Data?, response: URLResponse?, error: Error?) {
-    if error != nil {
-      print(error!)
-      return
-    }
-    
-    if let safeData = data {
-      let dataString = String(data: safeData, encoding: .utf8)
-      print(dataString!)
+//  func handle(data: Data?, response: URLResponse?, error: Error?) {
+//
+//    // Check for errors
+//    if error != nil {
+//      print(error!)
+//      return
+//    }
+//
+//    // Check for nil data
+//    if let safeData = data {
+//      let dataString = String(data: safeData, encoding: .utf8)
+//      print(dataString!)
+//    }
+//  }
+  
+  func parseJSON(weatherData: Data) {
+    let decoder = JSONDecoder()
+    do {
+      let decodedData = try decoder.decode(WeatherData.self, from: weatherData)
+      
+      if decodedData.weather.last != nil {
+        print(decodedData.weather.last!.description)
+      }
+    } catch {
+      print(error)
     }
   }
 }
