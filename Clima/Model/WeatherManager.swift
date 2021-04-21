@@ -10,24 +10,27 @@ import Foundation
 
 struct WeatherManager {
   
-  // MARK: - Variables
+  // MARK: - Properties
   
   let weatherURL = "https://api.openweathermap.org/data/2.5/weather?units=imperial"
   
+  // Computed property for API Key.
   private var apiKey: String {
     get {
-      // 1
+      // Get filePath of hidden .plist file.
       guard let filePath = Bundle.main.path(forResource: "Clima-Info", ofType: "plist") else {
         fatalError("Couldn't find file 'Clima-Info.plist'.")
       }
       
-      // 2
+      // Store contents of file in a variable as an dictionary.
       let plist = NSDictionary(contentsOfFile: filePath)
       
+      // Retrieve value associated with key in dictionary and store.
       guard let value = plist?.object(forKey: "API_KEY") as? String else {
         fatalError("Couldn't find key 'API_KEY' in 'Clima-Info.plist'.")
       }
       
+      // return the value.
       return value
     }
   }
