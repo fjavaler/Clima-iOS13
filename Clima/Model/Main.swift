@@ -8,6 +8,6 @@
 
 import Foundation
 
-struct Main: Decodable {
+struct Main: Codable {
   let temp: Double
 }

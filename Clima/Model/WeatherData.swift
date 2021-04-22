@@ -8,8 +8,8 @@
 
 import Foundation
 
-struct WeatherData: Decodable {
+struct WeatherData: Codable {
   let name: String
   let main: Main
-  let weather: [Weather]
+  let weather: [WeatherDTO]
 }

@@ -8,11 +8,18 @@
 
 import Foundation
 
+protocol WeatherManagerDelegate {
+  func didUpdateWeather(_ weatherManager: WeatherManager, weather: WeatherModel)
+  func didFailWithError(error: Error)
+}
+
 struct WeatherManager {
   
   // MARK: - Properties
   
   let weatherURL = "https://api.openweathermap.org/data/2.5/weather?units=imperial"
+  
+  var delegate: WeatherManagerDelegate?
   
   // Computed property for API Key.
   private var apiKey: String {
@@ -39,10 +46,10 @@ struct WeatherManager {
   
   func fetchWeather(cityName: String) {
     let urlString = "\(weatherURL)&q=\(cityName)&appid=\(apiKey)"
-    performRequest(urlString: urlString)
+    performRequest(with: urlString)
   }
   
-  func performRequest(urlString: String) {
+  func performRequest(with urlString: String) {
     // 1. Create a URL
     if let url = URL(string: urlString) {
       // 2. Create a URLSession
@@ -59,13 +66,15 @@ struct WeatherManager {
         
         // Check for errors
         if error != nil {
-          print(error!)
+          delegate?.didFailWithError(error: error!)
           return
         }
         
         // Check for nil response data and parse JSON to Swift object
         if let safeData = data {
-          parseJSON(weatherData: safeData)
+          if let weather = parseJSON(safeData) {
+            delegate?.didUpdateWeather(self, weather: weather)
+          }
         }
       }
       
@@ -92,16 +101,28 @@ struct WeatherManager {
   
   // MARK: - Helper methods
   
-  func parseJSON(weatherData: Data) {
+  // Convert JSON to a WeatherModel
+  func parseJSON(_ weatherData: Data) -> WeatherModel? {
     let decoder = JSONDecoder()
     do {
       let decodedData = try decoder.decode(WeatherData.self, from: weatherData)
       
       if decodedData.weather.last != nil {
-        print(decodedData.weather.last!.description)
+        let id = decodedData.weather[0].id
+        let temp = decodedData.main.temp
+        let name = decodedData.name
+        
+        let weather = WeatherModel(conditionId: id, cityName: name, temperature: temp)
+        return weather
+        } else {
+        // No 0th weather item found in weather section (array) of response.
+        return nil
       }
     } catch {
-      print(error)
+      delegate?.didFailWithError(error: error)
+      return nil
     }
   }
+  
+  
 }
