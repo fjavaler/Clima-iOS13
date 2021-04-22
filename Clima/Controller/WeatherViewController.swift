@@ -7,36 +7,36 @@
 //
 
 import UIKit
+import CoreLocation
 
-class WeatherViewController: UIViewController, UITextFieldDelegate, WeatherManagerDelegate {
-  
-  // MARK: - IBOutlets
-  
+class WeatherViewController: UIViewController {
   @IBOutlet weak var conditionImageView: UIImageView!
   @IBOutlet weak var temperatureLabel: UILabel!
   @IBOutlet weak var cityLabel: UILabel!
   @IBOutlet weak var searchTextField: UITextField!
   
   var weatherManager = WeatherManager()
-  
-  // MARK: - Lifecycle methods
+  let locationManager = CLLocationManager()
   
   override func viewDidLoad() {
     super.viewDidLoad()
     
+    locationManager.requestWhenInUseAuthorization()
+    locationManager.requestLocation()
+    
     weatherManager.delegate = self
     searchTextField.delegate = self
   }
-  
-  // MARK: - IBActions
-  
+}
+
+// MARK: - UITextFieldDelegate
+
+extension WeatherViewController: UITextFieldDelegate {
   // Fired when search button is pressed.
   @IBAction func searchPressed(_ sender: UIButton) {
     searchTextField.endEditing(true)
     print(searchTextField.text!)
   }
-  
-  // MARK: - TextField state methods
   
   // Fired when Go button pressed on keyboard. Alternative to pressing the search button.
   func textFieldShouldReturn(_ textField: UITextField) -> Bool {
@@ -63,7 +63,11 @@ class WeatherViewController: UIViewController, UITextFieldDelegate, WeatherManag
     }
     searchTextField.text = ""
   }
-  
+}
+
+// MARK: - WeatherManagerDelegate
+
+extension WeatherViewController: WeatherManagerDelegate {
   func didUpdateWeather(_ weatherManager: WeatherManager, weather: WeatherModel) {
     temperatureLabel.text = weather.temperatureString
   }
