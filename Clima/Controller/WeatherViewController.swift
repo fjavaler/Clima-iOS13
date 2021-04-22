@@ -21,11 +21,12 @@ class WeatherViewController: UIViewController {
   override func viewDidLoad() {
     super.viewDidLoad()
     
-    locationManager.requestWhenInUseAuthorization()
-    locationManager.requestLocation()
-    
+    locationManager.delegate = self
     weatherManager.delegate = self
     searchTextField.delegate = self
+    
+    locationManager.requestWhenInUseAuthorization()
+    locationManager.requestLocation()
   }
 }
 
@@ -57,7 +58,7 @@ extension WeatherViewController: UITextFieldDelegate {
   
   // Clears the text field after a search is performed. Gets the weather for city searched for (from API call).
   func textFieldDidEndEditing(_ textField: UITextField) {
-    // User searchTextField.text to get the weather for that city.
+    // Uses searchTextField.text to get the weather for that city.
     if let city = searchTextField.text {
       weatherManager.fetchWeather(cityName: city)
     }
@@ -73,6 +74,22 @@ extension WeatherViewController: WeatherManagerDelegate {
   }
   
   func didFailWithError(error: Error) {
+    print(error)
+  }
+}
+
+// MARK: - CLLocationManagerDelegate
+
+extension WeatherViewController: CLLocationManagerDelegate {
+  func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+    if let location = locations.last {
+      let lat = location.coordinate.latitude
+      let lon = location.coordinate.longitude
+      weatherManager.fetchWeather(latitude: lat, longitude: lon)
+    }
+  }
+  
+  func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
     print(error)
   }
 }
